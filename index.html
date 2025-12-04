@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Snake Game</title>
+    <title>Snake-Game</title>
 
     <!-- Mobile-friendly viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -33,17 +33,28 @@
         #outer {
             position: relative;
             display: flex;
-            flex-direction: column;
-            /* desktop: stacked */
+            flex-direction: column; /* default: stacked */
             align-items: center;
             gap: 12px;
             transform-origin: center center;
         }
 
-        /* On mobile: arrange horizontally (game + controls side by side) */
-        @media (max-width: 900px) {
+        /* Layout behavior:
+           - Mobile portrait: game on top, controls below (easier thumb reach)
+           - Mobile landscape: side-by-side
+           - Desktop: default stacked, but scaling keeps it nice
+        */
+        @media (max-width: 900px) and (orientation: portrait) {
+            #outer {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 900px) and (orientation: landscape) {
             #outer {
                 flex-direction: row;
+                align-items: center;
             }
         }
 
@@ -248,10 +259,23 @@
             box-shadow: 0 5px 12px rgba(37, 99, 235, 0.5);
         }
 
-        /* Show touch controls on small screens */
+        /* Show and enlarge touch controls on small screens */
         @media (max-width: 900px) {
             #touch-controls {
                 display: flex;
+                margin-top: 8px;
+            }
+
+            .touch-btn {
+                width: 68px;
+                height: 68px;
+                border-radius: 20px;
+                font-size: 24px;
+            }
+
+            #touch-controls-row {
+                gap: 26px;
+                margin-top: 8px;
             }
         }
 
@@ -391,7 +415,7 @@
 
     <!-- Footer: separate, always below everything -->
     <div id="footer">
-        <span id="footer-text">Made with ♥ by RAJESH | Nokia Snake JS</span>
+        <span id="footer-text">Made with ♥ by </RajCode-xs1dd></span>
     </div>
 
     <!-- About modal -->
@@ -982,7 +1006,7 @@
             showLevelSelectScreen();
         });
 
-        // Touch controls (card on side)
+        // Touch controls (card on side / below)
         function attachTouch(btn, dir) {
             const handler = (e) => {
                 e.preventDefault();
