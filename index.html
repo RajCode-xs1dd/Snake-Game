@@ -415,7 +415,7 @@
 
     <!-- Footer: separate, always below everything -->
     <div id="footer">
-        <span id="footer-text">Made with ♥ by </RajCode-xs1dd></span>
+        <div id="footer-text">✨ Built with ❤ by <strong>RajCode-xs1dd</strong></div>
     </div>
 
     <!-- About modal -->
@@ -479,13 +479,13 @@
         const BIG_FOOD_RADIUS = BLOCK_SIZE * 0.8;
 
         // Slower snake speeds: Easy < Medium < Hard
-        const SNAKE_SPEEDS = { Easy: 5, Medium: 8, Hard: 11 };
+        const SNAKE_SPEEDS = { Easy: 4, Medium: 6, Hard: 9 };
 
-        const LEVEL_SCORE = { Easy: 1, Medium: 4, Hard: 7 };
+        const LEVEL_SCORE = { Easy: 6, Medium: 7, Hard: 8 };
         // Max possible big food scores if eaten instantly
-        const BIG_FOOD_SCORE = { Easy: 5, Medium: 10, Hard: 15 };
+        const BIG_FOOD_SCORE = { Easy: 10, Medium: 15, Hard: 20 };
         // Min score even if eaten very late
-        const BIG_FOOD_MIN_SCORE = { Easy: 2, Medium: 3, Hard: 4 };
+        const BIG_FOOD_MIN_SCORE = { Easy: 2, Medium: 5, Hard: 8 };
 
         const BIG_FOOD_DURATION = { Easy: 8, Medium: 6, Hard: 4 };
 
@@ -595,7 +595,7 @@
             const h = rect.height;
             const scale = Math.min(
                 window.innerWidth / w,
-                (window.innerHeight - 30) / h    // leave some space for footer
+                (window.innerHeight - 50) / h    // leave some space for footer
             );
             outer.style.transform = `scale(${scale})`;
         }
