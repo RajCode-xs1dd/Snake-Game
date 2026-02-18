@@ -529,13 +529,44 @@
     <script>
         const WIDTH = 640;
         const HEIGHT = 520;
-        const TOP_PANEL_HEIGHT = 60;
+        let topPanelHeight = 60; // will be updated to match actual header size on small screens
         const BLOCK_SIZE = 32;
 
-        // Playable area: ensure bottom row visible and aligned
-        const PLAY_HEIGHT_BLOCKS = Math.floor((HEIGHT - TOP_PANEL_HEIGHT) / BLOCK_SIZE);
-        const PLAY_HEIGHT = PLAY_HEIGHT_BLOCKS * BLOCK_SIZE;
-        const PLAY_BOTTOM_Y = TOP_PANEL_HEIGHT + PLAY_HEIGHT - BLOCK_SIZE;
+        // Playable area (will be recalculated when layout changes)
+        let PLAY_HEIGHT_BLOCKS = Math.floor((HEIGHT - topPanelHeight) / BLOCK_SIZE);
+        let PLAY_HEIGHT = PLAY_HEIGHT_BLOCKS * BLOCK_SIZE;
+        let PLAY_BOTTOM_Y = topPanelHeight + PLAY_HEIGHT - BLOCK_SIZE;
+
+        // Safe inset from edges so items never draw under rounded corners
+        const SAFE_INSET = 8; // logical pixels
+        let minXBlock = 0, maxXBlock = 0, minYBlock = 0, maxYBlock = 0;
+        let minX = 0, maxX = 0, minY = 0, maxY = 0;
+
+        function recalcPlayBounds() {
+            // horizontal blocks allowed (leave SAFE_INSET from left/right)
+            minXBlock = Math.ceil(SAFE_INSET / BLOCK_SIZE);
+            maxXBlock = Math.floor((WIDTH - SAFE_INSET - BLOCK_SIZE) / BLOCK_SIZE);
+
+            // vertical blocks allowed (leave SAFE_INSET from top panel and bottom)
+            minYBlock = Math.ceil((topPanelHeight + SAFE_INSET) / BLOCK_SIZE);
+            maxYBlock = Math.floor((HEIGHT - SAFE_INSET - BLOCK_SIZE) / BLOCK_SIZE);
+
+            // Fallback: if inset is too large for current block size, clamp to full area
+            if (minXBlock > maxXBlock) {
+                minXBlock = 0;
+                maxXBlock = Math.floor((WIDTH - BLOCK_SIZE) / BLOCK_SIZE);
+            }
+            if (minYBlock > maxYBlock) {
+                minYBlock = Math.ceil(topPanelHeight / BLOCK_SIZE);
+                maxYBlock = Math.floor((HEIGHT - BLOCK_SIZE) / BLOCK_SIZE);
+            }
+
+            // pixel values
+            minX = minXBlock * BLOCK_SIZE;
+            maxX = maxXBlock * BLOCK_SIZE;
+            minY = minYBlock * BLOCK_SIZE;
+            maxY = maxYBlock * BLOCK_SIZE;
+        }
 
         // Food visuals
         const SMALL_FOOD_RADIUS = BLOCK_SIZE * 0.35;
@@ -567,6 +598,31 @@
             // reset transform and scale to device pixels
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
+        
+        // Recalculate layout metrics based on actual DOM sizes and canvas display scale
+        function updateLayoutMetrics() {
+            // Ensure internal canvas buffer matches display first
+            resizeCanvasToDisplay();
+
+            // Get displayed canvas width in CSS pixels and compute scale (CSS px per logical unit)
+            const canvasRect = canvas.getBoundingClientRect();
+            const scale = canvasRect.width / WIDTH || 1;
+
+            // Measure top panel height in CSS pixels and convert to logical units
+            const topPanelEl = document.getElementById("top-panel");
+            if (topPanelEl) {
+                const topRect = topPanelEl.getBoundingClientRect();
+                const topHeightCSS = topRect.height || 60;
+                // convert to logical units used by drawing (prevent too small values)
+                topPanelHeight = Math.max(32, topHeightCSS / scale);
+            }
+
+            PLAY_HEIGHT_BLOCKS = Math.floor((HEIGHT - topPanelHeight) / BLOCK_SIZE);
+            PLAY_HEIGHT = PLAY_HEIGHT_BLOCKS * BLOCK_SIZE;
+            PLAY_BOTTOM_Y = topPanelHeight + PLAY_HEIGHT - BLOCK_SIZE;
+            // recalc safe play bounds after layout metrics change
+            recalcPlayBounds();
+        }
         const outer = document.getElementById("outer");
 
         const scoreText = document.getElementById("score-text");
@@ -574,6 +630,7 @@
         const bestText = document.getElementById("best-text");
 
         const overlay = document.getElementById("overlay");
+        const topPanel = document.getElementById("top-panel");
         const overlayTitle = document.getElementById("overlay-title");
         const overlaySubtitle = document.getElementById("overlay-subtitle");
         const infoText = document.getElementById("info-text");
@@ -666,8 +723,8 @@
         // Responsive layout: rely on CSS sizing (no transform scale)
         function applyScale() {
             outer.style.transform = 'none';
-            // ensure canvas buffer matches the new display size
-            resizeCanvasToDisplay();
+            // ensure canvas buffer and layout metrics match the new display size
+            updateLayoutMetrics();
         }
         window.addEventListener("resize", applyScale);
         window.addEventListener("orientationchange", applyScale);
@@ -705,8 +762,11 @@
             bigFoodStart = 0;
             bigFoodDuration = BIG_FOOD_DURATION[level];
 
-            const startY = TOP_PANEL_HEIGHT + 3 * BLOCK_SIZE;
-            const startXCenter = Math.round((WIDTH / 2) / BLOCK_SIZE) * BLOCK_SIZE;
+            const startY = topPanelHeight + 3 * BLOCK_SIZE;
+            let startXCenter = Math.round((WIDTH / 2) / BLOCK_SIZE) * BLOCK_SIZE;
+            // clamp to safe play area
+            if (startXCenter < minX) startXCenter = minX;
+            if (startXCenter > maxX) startXCenter = maxX;
             snake = [
                 [startXCenter - 2 * BLOCK_SIZE, startY],
                 [startXCenter - 1 * BLOCK_SIZE, startY],
@@ -729,11 +789,12 @@
 
         function generateFood() {
             while (true) {
-                const xBlocks = WIDTH / BLOCK_SIZE;
-                const x = Math.floor(Math.random() * xBlocks) * BLOCK_SIZE;
+                // Choose random block within safe bounds
+                const xBlock = Math.floor(Math.random() * (maxXBlock - minXBlock + 1)) + minXBlock;
+                const x = xBlock * BLOCK_SIZE;
 
-                const yBlocks = PLAY_HEIGHT_BLOCKS;
-                const y = TOP_PANEL_HEIGHT + Math.floor(Math.random() * yBlocks) * BLOCK_SIZE;
+                const yBlock = Math.floor(Math.random() * (maxYBlock - minYBlock + 1)) + minYBlock;
+                const y = yBlock * BLOCK_SIZE;
 
                 if (!snake.some(seg => seg[0] === x && seg[1] === y)) {
                     return [x, y];
@@ -913,11 +974,11 @@
             let newX = head[0] + dx;
             let newY = head[1] + dy;
 
-            // wrapping inside playable area
-            if (newX < 0) newX = WIDTH - BLOCK_SIZE;
-            else if (newX >= WIDTH) newX = 0;
-            if (newY < TOP_PANEL_HEIGHT) newY = PLAY_BOTTOM_Y;
-            else if (newY > PLAY_BOTTOM_Y) newY = TOP_PANEL_HEIGHT;
+            // wrapping inside safe playable area (respect SAFE_INSET and dynamic header)
+            if (newX < minX) newX = maxX;
+            else if (newX > maxX) newX = minX;
+            if (newY < minY) newY = maxY;
+            else if (newY > maxY) newY = minY;
 
             // self collision
             if (snake.some(seg => seg[0] === newX && seg[1] === newY)) {
