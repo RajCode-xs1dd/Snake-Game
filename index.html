@@ -151,10 +151,13 @@
             #top-right { justify-content: flex-end; order: 3; }
 
             .top-btn {
-                min-width: 48px;
+                min-width: 44px;
                 padding: 6px 8px;
                 font-size: 11px;
             }
+
+            /* add a little extra left padding so wrapped items don't touch the rounded corner */
+            #top-panel { padding-left: 16px; padding-right: 16px; }
 
             /* Slightly reduce game container on very narrow screens */
             #game-container {
@@ -200,7 +203,23 @@
             flex-direction: column;
             text-align: center;
             padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top, 8px));
             box-sizing: border-box;
+        }
+
+        /* Overlay title sizing to avoid clipping on small screens */
+        #overlay-title {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            line-height: 1.05;
+            font-weight: 700;
+        }
+
+        @media (max-width: 480px) {
+            #overlay-title {
+                font-size: 20px;
+                margin-top: 4px;
+            }
         }
 
         .btn {
