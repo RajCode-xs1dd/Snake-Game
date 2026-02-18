@@ -521,6 +521,19 @@
 
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
+
+        // Ensure canvas bitmap matches display size (handle high-DPI screens)
+        function resizeCanvasToDisplay() {
+            const dpr = Math.max(1, window.devicePixelRatio || 1);
+            // keep logical game size constants (WIDTH, HEIGHT) but set internal buffer
+            canvas.width = WIDTH * dpr;
+            canvas.height = HEIGHT * dpr;
+            // keep CSS-controlled size (100% of container)
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            // reset transform and scale to device pixels
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
         const outer = document.getElementById("outer");
 
         const scoreText = document.getElementById("score-text");
@@ -620,8 +633,11 @@
         // Responsive layout: rely on CSS sizing (no transform scale)
         function applyScale() {
             outer.style.transform = 'none';
+            // ensure canvas buffer matches the new display size
+            resizeCanvasToDisplay();
         }
         window.addEventListener("resize", applyScale);
+        window.addEventListener("orientationchange", applyScale);
         applyScale();
 
         function showLevelSelectScreen() {
