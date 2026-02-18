@@ -57,7 +57,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
+            overflow: auto; /* allow small screens to scroll if necessary */
         }
 
         /* Outer wrapper: game + mobile controls */
@@ -98,8 +98,8 @@
             border: 2px solid #1f2937;
             box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
             background: #000;
-            width: 640px;
-            height: 520px;
+            width: min(92vw, 640px); /* responsive width */
+            aspect-ratio: 640 / 520; /* preserve original aspect ratio */
             border-radius: 18px;
             overflow: hidden;
         }
@@ -108,7 +108,7 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 640px;
+            right: 0;
             height: 60px;
             background: linear-gradient(90deg, #020617ee, #111827ee);
             display: flex;
@@ -134,7 +134,7 @@
             left: 50%;
             transform: translateX(-50%);
             top: 18px;
-            width: 300px;
+            width: min(80%, 300px);
             height: 25px;
             background: #111827;
             border: 2px solid #f9fafb;
@@ -151,15 +151,14 @@
 
         #canvas {
             display: block;
+            width: 100%;
+            height: 100%;
             background: #000;
         }
 
         #overlay {
             position: absolute;
-            left: 0;
-            top: 0;
-            width: 640px;
-            height: 520px;
+            inset: 0; /* fill the game container */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -618,17 +617,9 @@
 
         loadHighScore();
 
-        // Scale whole UI (game + controls) to fit screen
+        // Responsive layout: rely on CSS sizing (no transform scale)
         function applyScale() {
-            outer.style.transform = "scale(1)";
-            const rect = outer.getBoundingClientRect();
-            const w = rect.width;
-            const h = rect.height;
-            const scale = Math.min(
-                window.innerWidth / w,
-                (window.innerHeight - 50) / h    // leave some space for footer
-            );
-            outer.style.transform = `scale(${scale})`;
+            outer.style.transform = 'none';
         }
         window.addEventListener("resize", applyScale);
         applyScale();
