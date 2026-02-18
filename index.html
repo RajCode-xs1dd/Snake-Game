@@ -146,14 +146,16 @@
                 min-width: 0;
             }
 
-            #top-left { justify-content: flex-start; order: 1; }
+            /* stack sections to avoid overflow; ensure buttons can wrap */
+            #top-left { justify-content: flex-start; order: 1; flex: 1 1 100%; }
             #top-center { justify-content: center; order: 2; width: 100%; }
-            #top-right { justify-content: flex-end; order: 3; }
+            #top-right { justify-content: flex-end; order: 3; flex: 1 1 100%; flex-wrap: wrap; gap: 8px; }
 
             .top-btn {
-                min-width: 44px;
-                padding: 6px 8px;
+                min-width: 40px;
+                padding: 6px 6px;
                 font-size: 11px;
+                flex: 0 1 auto;
             }
 
             /* add a little extra left padding so wrapped items don't touch the rounded corner */
@@ -641,6 +643,17 @@
             PLAY_BOTTOM_Y = topPanelHeight + PLAY_HEIGHT - BLOCK_SIZE;
             // recalc safe play bounds after layout metrics change
             recalcPlayBounds();
+
+            // Ensure overlay content sits below the panel and rounded border (in CSS pixels)
+            try {
+                const overlayEl = document.getElementById('overlay');
+                const canvasRect = canvas.getBoundingClientRect();
+                const scale = canvasRect.width / WIDTH || 1;
+                const paddingTopPx = Math.ceil((topPanelHeight + SAFE_INSET + 6) * scale);
+                if (overlayEl) overlayEl.style.paddingTop = paddingTopPx + 'px';
+            } catch (e) {
+                // ignore
+            }
         }
         const outer = document.getElementById("outer");
 
