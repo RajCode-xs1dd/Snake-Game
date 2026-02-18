@@ -44,13 +44,15 @@
     <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
     <link rel="icon" href="./favicon.ico">
     <link rel="manifest" href="./site.webmanifest">
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            background: #020617;
-            color: #fff;
-            font-family: "Comic Sans MS", system-ui, sans-serif;
+            /* Make header compact: stacked rows so buttons occupy two neat rows */
+            #top-panel {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 6px 12px;
+                row-gap: 6px;
+                height: auto;
+                min-height: 44px;
+            }
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -64,12 +66,13 @@
         #outer {
             position: relative;
             display: flex;
-            flex-direction: column; /* default: stacked */
-            align-items: center;
-            gap: 12px;
-            transform-origin: center center;
-        }
-
+            /* Make header buttons smaller and allow two rows */
+            .top-btn {
+                flex: 0 1 30%; /* let buttons shrink and wrap into rows */
+                min-width: 64px;
+                padding: 6px 6px;
+                font-size: 12px;
+            }
         /* Layout behavior:
            - Mobile portrait: game on top, controls below (easier thumb reach)
            - Mobile landscape: side-by-side
@@ -199,16 +202,17 @@
             inset: 0; /* fill the game container */
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* place content from top to avoid clipping */
+            justify-content: center; /* center modal */
             background: radial-gradient(circle at center, #020617dd, #020617f5);
             color: #fff;
             flex-direction: column;
             text-align: center;
             padding: 20px;
-            padding-top: calc(20px + env(safe-area-inset-top, 8px));
+            padding-top: calc(12px + env(safe-area-inset-top, 8px));
             box-sizing: border-box;
-            overflow: auto; /* allow scrolling if content is taller */
-            max-height: 100%;
+            overflow: hidden;
+            max-height: 92%;
+            transform: translateY(-6%); /* slightly up to place properly */
         }
 
         /* Overlay title sizing to avoid clipping on small screens */
