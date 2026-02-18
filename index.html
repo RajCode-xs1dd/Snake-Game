@@ -129,6 +129,39 @@
             gap: 8px;
         }
 
+        /* Allow header to wrap on narrow screens so items don't overflow */
+        @media (max-width: 480px) {
+            #top-panel {
+                flex-wrap: wrap;
+                padding: 8px 10px;
+                row-gap: 8px;
+                height: auto;
+                min-height: 56px;
+            }
+
+            #top-left,
+            #top-center,
+            #top-right {
+                flex: 1 1 48%;
+                min-width: 0;
+            }
+
+            #top-left { justify-content: flex-start; order: 1; }
+            #top-center { justify-content: center; order: 2; width: 100%; }
+            #top-right { justify-content: flex-end; order: 3; }
+
+            .top-btn {
+                min-width: 48px;
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            /* Slightly reduce game container on very narrow screens */
+            #game-container {
+                width: min(94vw, 520px);
+            }
+        }
+
         #timer-bar-bg {
             position: absolute;
             left: 50%;
