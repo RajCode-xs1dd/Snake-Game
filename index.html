@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>Nokia Snake Pro – Modern Remake with Levels & AI</title>
@@ -44,6 +44,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
     <link rel="icon" href="./favicon.ico">
     <link rel="manifest" href="./site.webmanifest">
+    <style>
             /* Make header compact: stacked rows so buttons occupy two neat rows */
             #top-panel {
                 flex-direction: column;
@@ -53,26 +54,21 @@
                 height: auto;
                 min-height: 44px;
             }
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: auto; /* allow small screens to scroll if necessary */
-        }
+            body {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                overflow: auto; /* allow small screens to scroll if necessary */
+            }
 
         /* Outer wrapper: game + mobile controls */
         #outer {
             position: relative;
             display: flex;
-            /* Make header buttons smaller and allow two rows */
-            .top-btn {
-                flex: 0 1 30%; /* let buttons shrink and wrap into rows */
-                min-width: 64px;
-                padding: 6px 6px;
-                font-size: 12px;
-            }
+        }
         /* Layout behavior:
            - Mobile portrait: game on top, controls below (easier thumb reach)
            - Mobile landscape: side-by-side
@@ -646,11 +642,9 @@
 
             // Ensure overlay content sits below the panel and rounded border (in CSS pixels)
             try {
-                const overlayEl = document.getElementById('overlay');
-                const canvasRect = canvas.getBoundingClientRect();
-                const scale = canvasRect.width / WIDTH || 1;
-                const paddingTopPx = Math.ceil((topPanelHeight + SAFE_INSET + 6) * scale);
-                if (overlayEl) overlayEl.style.paddingTop = paddingTopPx + 'px';
+                    const overlayEl = document.getElementById('overlay');
+                    const paddingTopPx = Math.ceil((topPanelHeight + SAFE_INSET + 6) * scale);
+                    if (overlayEl) overlayEl.style.paddingTop = paddingTopPx + 'px';
             } catch (e) {
                 // ignore
             }
@@ -760,7 +754,31 @@
         }
         window.addEventListener("resize", applyScale);
         window.addEventListener("orientationchange", applyScale);
-        applyScale();
+
+        // Run layout and safety init on full load to avoid race conditions in some mobile browsers
+        window.addEventListener('load', () => {
+            try {
+                updateLayoutMetrics();
+                applyScale();
+                showLevelSelectScreen();
+            } catch (err) {
+                // show visible error box so mobile users can report it
+                const errBox = document.createElement('div');
+                errBox.style.position = 'fixed';
+                errBox.style.left = '8px';
+                errBox.style.right = '8px';
+                errBox.style.top = '8px';
+                errBox.style.padding = '10px';
+                errBox.style.background = 'linear-gradient(90deg,#ff6b6b,#f97316)';
+                errBox.style.color = '#fff';
+                errBox.style.zIndex = 99999;
+                errBox.style.borderRadius = '8px';
+                errBox.style.fontSize = '13px';
+                errBox.textContent = 'Initialization error: ' + (err && err.message ? err.message : String(err));
+                document.body.appendChild(errBox);
+                console.error(err);
+            }
+        });
 
         function showLevelSelectScreen() {
             overlay.style.display = "flex";
