@@ -199,7 +199,7 @@
             inset: 0; /* fill the game container */
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* place content from top to avoid clipping */
             background: radial-gradient(circle at center, #020617dd, #020617f5);
             color: #fff;
             flex-direction: column;
@@ -207,6 +207,8 @@
             padding: 20px;
             padding-top: calc(20px + env(safe-area-inset-top, 8px));
             box-sizing: border-box;
+            overflow: auto; /* allow scrolling if content is taller */
+            max-height: 100%;
         }
 
         /* Overlay title sizing to avoid clipping on small screens */
@@ -236,12 +238,6 @@
             color: #f9fafb;
             box-shadow: 0 10px 20px rgba(15, 118, 110, 0.4);
             transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 25px rgba(34, 197, 94, 0.45);
-            filter: brightness(1.05);
         }
 
         .btn:active {
